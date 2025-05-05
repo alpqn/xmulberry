@@ -379,7 +379,7 @@ void Mulberry::loadMimeApps()
         for(const auto& appFile : dir.entryInfoList(QStringList("*.desktop")))
         {
             QFile file{ appFile.absoluteFilePath() };
-            MimeApp app{ file.fileName() };
+            MimeApp app{ QFileInfo(file.fileName()) };
             if(!(app.getMimeTypes().empty() || app.getName().isEmpty())) { m_mimeApps.push_back(app); }
         }
     }

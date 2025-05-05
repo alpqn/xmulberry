@@ -37,6 +37,6 @@ sudo dnf install qt6-qtbase-devel xorg-x11-server-utils xorg-x11-utils feh
 ```
 ## Compilation
 ```bash
-qmake
+qmake6
 make -j $(nproc)
 ```
