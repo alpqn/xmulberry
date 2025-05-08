@@ -73,35 +73,34 @@ void Mulberry::loadSettings()
     Setting browser{ "Browser", qgetenv("BROWSER"), "export BROWSER=%1" };
     browser.setGetter([this]{ return ui->browser->text(); });
     browser.setSetter([=, this]{ ui->browser->setText(browser.values().toString()); });
-    browser.setChangedCallback([=]{ return browser.values() != browser.getter(); });
+    browser.setChangedCallback([=]{ return browser.values().toString() != browser.getter().toString(); });
     m_settings.push_back(std::move(browser));
 
     Setting editor{ "Editor", qgetenv("EDITOR"), "export EDITOR=%1" };
     editor.setGetter([this]{ return ui->editor->text(); });
     editor.setSetter([=, this]{ ui->editor->setText(editor.values().toString()); });
-    editor.setChangedCallback([=]{ return editor.values() != editor.getter(); });
+    editor.setChangedCallback([=]{ return editor.values().toString() != editor.getter().toString(); });
     m_settings.push_back(std::move(editor));
 
     Setting visual{ "Visual", qgetenv("VISUAL"), "export VISUAL=%1" };
     visual.setGetter([this]{ return ui->visual->text(); });
     visual.setSetter([=, this]{ ui->visual->setText(visual.values().toString()); });
-    visual.setChangedCallback([=]{ return visual.values() != visual.getter(); });
+    visual.setChangedCallback([=]{ return visual.values().toString() != visual.getter().toString(); });
     m_settings.push_back(std::move(visual));
 
     Setting pager{ "Pager", qgetenv("PAGER"), "export PAGER=%1" };
     pager.setGetter([this]{ return ui->pager->text(); });
     pager.setSetter([=, this]{ ui->pager->setText(pager.values().toString()); });
-    pager.setChangedCallback([=]{ return pager.values() != pager.getter(); });
+    pager.setChangedCallback([=]{ return pager.values().toString() != pager.getter().toString(); });
     m_settings.push_back(std::move(pager));
 
     Setting terminal{ "Terminal", qgetenv("TERMINAL"), "export TERMINAL=%1" };
     terminal.setGetter([this]{ return ui->terminal->text(); });
     terminal.setSetter([=, this]{ ui->terminal->setText(terminal.values().toString()); });
-    terminal.setChangedCallback([=]{ return terminal.values() != terminal.getter(); } );
+    terminal.setChangedCallback([=]{ return terminal.values().toString() != terminal.getter().toString(); } );
     m_settings.push_back(std::move(terminal));
 
     QStringList xrandrOutput{ SH("xrandr").split('\n') };
-
     Setting resolution{ "Resolution", xrandrOutput.filter("*")[0].simplified().section(" ", 0, 0), "xrandr --output " + xrandrOutput.filter("connected")[0].simplified().section(" ", 0, 0) + " --mode %1" };
     resolution.setGetter([this]{ return ui->resolution->currentText(); });
     resolution.setSetter([=, this]{ ui->resolution->setCurrentText(resolution.values().toString()); });
@@ -151,6 +150,7 @@ void Mulberry::loadSettings()
     QHash<QString, QVariant> rScrollingValues;
     QHash<QString, QVariant> sensitivityValues;
     QStringList xinputOutput{ SH("xinput").split('\n') };
+
     for(const auto& device : xinputOutput.filter(QRegularExpression("^⎜.*↳.*")))
     {
         QString xinputFormatted{ device.mid(device.indexOf("↳") + 1, device.indexOf("id=")).simplified() };
@@ -174,7 +174,6 @@ void Mulberry::loadSettings()
     lefthanded.setChangedCallback([=, this]{ return lefthanded.values().toHash()[ui->lefthandedComboBox->currentText()].toBool() != ui->lefthanded->isChecked(); });
     connect(ui->lefthandedComboBox, &QComboBox::currentTextChanged, this, [=, this]{ ui->lefthanded->setChecked(lefthanded.values().toHash()[ui->lefthandedComboBox->currentText()].toBool()); });
     m_settings.push_back(std::move(lefthanded));
-    ui->lefthanded->setChecked(lefthanded.values().toHash()[ui->lefthandedComboBox->currentText()].toBool());
 
     Setting rScrolling{ "Reverse Scrolling Enabled", rScrollingValues, "xinput set-prop pointer:'%1' 'libinput Natural Scrolling Enabled' %2" };
     rScrolling.setGetter([this]{ return QStringList{ ui->rScrollingComboBox->currentText(), ui->rScrolling->isChecked() ? "1" : "0" }; });
@@ -182,17 +181,18 @@ void Mulberry::loadSettings()
     rScrolling.setChangedCallback([=, this]{ return rScrolling.values().toHash()[ui->rScrollingComboBox->currentText()].toBool() != ui->rScrolling->isChecked(); });
     connect(ui->rScrollingComboBox, &QComboBox::currentTextChanged, this, [=, this]{ ui->rScrolling->setChecked(rScrolling.values().toHash()[ui->rScrollingComboBox->currentText()].toBool()); });
     m_settings.push_back(std::move(rScrolling));
-    ui->rScrolling->setChecked(rScrolling.values().toHash()[ui->rScrollingComboBox->currentText()].toBool());
 
     Setting sensitivity{ "Mouse Sensitivity", sensitivityValues, "xinput set-prop pointer:'%1' 'libinput Accel Speed' %2" };
     sensitivity.setGetter([this]{ return QStringList{ ui->mouseSensitivityComboBox->currentText(), ui->mouseSensitivity->text() }; });
-    sensitivity.setSetter([=, this]{ ui->mouseSensitivity->setValue(sensitivity.values().toDouble()); });
+    sensitivity.setSetter([=, this]{ ui->mouseSensitivity->setValue(sensitivity.values().toHash()[ui->mouseSensitivityComboBox->currentText()].toDouble()); });
     sensitivity.setChangedCallback([=, this]{ return sensitivity.values().toHash()[ui->mouseSensitivityComboBox->currentText()].toDouble() != ui->mouseSensitivity->text().toDouble(); });
     connect(ui->mouseSensitivityComboBox, &QComboBox::currentTextChanged, this, [=, this]{ ui->mouseSensitivity->setValue(sensitivity.values().toHash()[ui->mouseSensitivityComboBox->currentText()].toDouble()); });
     m_settings.push_back(std::move(sensitivity));
-    ui->mouseSensitivity->setValue(sensitivity.values().toHash()[ui->mouseSensitivityComboBox->currentText()].toDouble());
 
-    QString xresourcesCmd{ SH("xrdb -n " + QStandardPaths::locate(QStandardPaths::HomeLocation, "/.Xresources")).remove(QRegularExpression("^xrdb:*")) };
+    QString xresourcesCmd{ "" };
+    if(QFile::exists(QStandardPaths::writableLocation(QStandardPaths::HomeLocation) + "/.Xresources"))
+        xresourcesCmd = SH("xrdb -n " + QStandardPaths::writableLocation(QStandardPaths::HomeLocation) + "/.Xresources").remove(QRegularExpression("^xrdb:*"));
+
     if(!xresourcesCmd.isEmpty())
     {
         QTextStream xresourcesStream{ &xresourcesCmd };
@@ -360,13 +360,15 @@ void Mulberry::saveChanges()
                 xinitrc.close();
                 if(!xinitrcContent.contains(". " + QStandardPaths::locate(QStandardPaths::ConfigLocation, "xmulberry/xmulberry")))
                 {
-                    if(!xinitrc.open(QIODevice::Append)) { std::cerr << "Cannot open xinitrc, check its file permissions\n"; return; }
+                    // Don't append it to the end of the file because it might not get sourced
+                    if(!xinitrc.open(QIODevice::WriteOnly)) { std::cerr << "Cannot open xinitrc, check its file permissions\n"; return; }
                     QTextStream xinitrcOut{ &xinitrc };
-                    xinitrcOut << ". " + QStandardPaths::locate(QStandardPaths::ConfigLocation, "xmulberry/xmulberry") + '\n';
+                    xinitrcOut << ". " + QStandardPaths::locate(QStandardPaths::ConfigLocation, "xmulberry/xmulberry") + '\n' + xinitrcContent;
                     xinitrc.close();
                 }
             }
         });
+
         msg->exec();
     }
 }
@@ -379,7 +381,7 @@ void Mulberry::loadMimeApps()
         for(const auto& appFile : dir.entryInfoList(QStringList("*.desktop")))
         {
             QFile file{ appFile.absoluteFilePath() };
-            MimeApp app{ QFileInfo(file.fileName()) };
+            MimeApp app{ QFileInfo(file) };
             if(!(app.getMimeTypes().empty() || app.getName().isEmpty())) { m_mimeApps.push_back(app); }
         }
     }
@@ -393,7 +395,6 @@ void Mulberry::writeChanges(const QList<Setting>& settingsChanged, const QList<S
     QDir dir{ filepath.dir() };
     if(!dir.exists()) { dir.mkpath("."); }
     QFile file{ filepath.absoluteFilePath() };
-
     // Open it in ReadWrite mode so that if the file doesn't exist, it will be created
     if(!file.open(QIODevice::ReadWrite)) { std::cerr << "Cannot open " << filepath.absoluteFilePath().toStdString(); exit(1); }
     QTextStream streamIn{ &file };
@@ -415,36 +416,50 @@ void Mulberry::writeChanges(const QList<Setting>& settingsChanged, const QList<S
     file.close();
     SH(". " + QStandardPaths::locate(QStandardPaths::ConfigLocation, "xmulberry/xmulberry")); // Source the file
 
-    QFile xresourcesFile{ QStandardPaths::locate(QStandardPaths::HomeLocation, "/.Xresources") };
-    if(!xresourcesFile.open(QIODevice::ReadOnly)) { std::cout << "Cannot read from " << xresourcesFile.fileName().toStdString(); exit(1); }
-    QTextStream xresourcesStreamIn{ &xresourcesFile };
-    QString xresourcesContent{ xresourcesStreamIn.readAll() };
-    xresourcesFile.close();
-
-    for(const auto& resource : xresourcesChanged)
+    if(!xresourcesChanged.empty())
     {
-        QStringList values{ resource.values().toStringList() };
-        xresourcesContent.replace(QRegularExpression("^.*" + values.first() + ".*:.*$", QRegularExpression::MultilineOption), values.first() + ": " + resource.getter().toString());
+        QFile xresourcesFile{ QStandardPaths::writableLocation(QStandardPaths::HomeLocation) + "/.Xresources" };
+        if(!xresourcesFile.open(QIODevice::ReadOnly)) { std::cout << "Cannot read from " << xresourcesFile.fileName().toStdString(); exit(1); }
+        QTextStream xresourcesStreamIn{ &xresourcesFile };
+        QString xresourcesContent{ xresourcesStreamIn.readAll() };
+        xresourcesFile.close();
+        for(const auto& resource : xresourcesChanged)
+        {
+            QStringList values{ resource.values().toStringList() };
+            xresourcesContent.replace(QRegularExpression("^.*" + values.first() + ".*:.*$", QRegularExpression::MultilineOption), values.first() + ": " + resource.getter().toString());
+        }
+
+        if(!xresourcesFile.open(QIODevice::WriteOnly)) { std::cout << "Cannot write changes to " << xresourcesFile.fileName().toStdString(); exit(1); }
+        QTextStream xresourcesStreamOut{ &xresourcesFile };
+        xresourcesStreamOut << xresourcesContent;
+        xresourcesFile.close();
     }
 
-    if(!xresourcesFile.open(QIODevice::WriteOnly)) { std::cout << "Cannot write changes to " << xresourcesFile.fileName().toStdString(); exit(1); }
-    QTextStream xresourcesStreamOut{ &xresourcesFile };
-    xresourcesStreamOut << xresourcesContent;
-    xresourcesFile.close();
-
-
-    QFile configFile{ QStandardPaths::locate(QStandardPaths::ConfigLocation, "mimeapps.list") };
+    QFile configFile{ QStandardPaths::writableLocation(QStandardPaths::ConfigLocation) + "/mimeapps.list" };
     if(!configFile.open(QIODevice::ReadWrite)) { std::cerr << "Cannot open " << configFile.fileName().toStdString() << " check its permissions.\n"; exit(1); }
 
-    QSettings configSettings{ configFile.fileName(), QSettings::IniFormat };
-    configSettings.beginGroup("Default Applications");
 
-    for(const auto& app : m_mimeApps)
-    {
-        if(app.getMimeTypesAdded().isEmpty()) continue;
+    { // Put configSettings in a block, so that it doesn't get associated with the file after its closed
+        QSettings configSettings{ configFile.fileName(), QSettings::NativeFormat };
+        configSettings.beginGroup("Default Applications");
 
-        for(const auto& typeChanged : app.getMimeTypesAdded()) { configSettings.setValue(typeChanged, app.getFilename()); }
+        for(const auto& app : m_mimeApps)
+        {
+            if(app.getMimeTypesAdded().isEmpty()) continue;
+
+            for(const auto& typeChanged : app.getMimeTypesAdded()) { configSettings.setValue(typeChanged, app.getFilename()); }
+        }
+        configSettings.endGroup();
+        configFile.close();
     }
-    configSettings.endGroup();
+
+    if(!configFile.open(QIODevice::ReadOnly)) { std::cerr << "Cannot open " << configFile.fileName().toStdString() << " check its permissions.\n"; exit(1); }
+    QTextStream configFileIn{ &configFile };
+    QByteArray encodedConfigFile{ configFileIn.readAll().replace("\\", "/").toUtf8() }; // Replace the backslashes with slashes because QSettings::NativeFormat does that for some reason
+    configFile.close();
+
+    if(!configFile.open(QIODevice::WriteOnly)) { std::cerr << "Cannot open " << configFile.fileName().toStdString() << " check its permissions.\n"; exit(1); }
+    QTextStream configFileOut{ &configFile };
+    configFileOut << encodedConfigFile.percentDecoded(); // Decode QSettings::NativeFormat's percent encoding
     configFile.close();
 }

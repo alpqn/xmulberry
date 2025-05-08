@@ -7,16 +7,16 @@
 class Setting
 {
 public:
-    Setting(QString settingName, QVariant values, QString outputCmd);
+    Setting(const QString& settingName, const QVariant& values, const QString& outputCmd);
 
     const QString& name() const { return m_name; }
     const QVariant& values() const { return m_values; }
     const QString& outputCmd() const { return m_outputCmd; }
     QString outputCmdFormatted() const;
 
-    void setGetter(std::function<QVariant()> getterLambda) { getter = getterLambda; }
-    void setSetter(std::function<void()> setterLambda) { setter = setterLambda; setter(); }
-    void setChangedCallback(std::function<bool()> function) { isChanged = function; }
+    void setGetter(const std::function<QVariant()>& getterLambda) { getter = getterLambda; }
+    void setSetter(const std::function<void()>& setterLambda) { setter = setterLambda; setter(); }
+    void setChangedCallback(const std::function<bool()>& function) { isChanged = function; }
 
     std::function<QVariant()> getter;
     std::function<void()> setter;

@@ -8,7 +8,7 @@
 class MimeApp
 {
 public:
-    MimeApp(QFileInfo file);
+    MimeApp(const QFileInfo& file);
 
     const QString& getName() const { return m_name; }
     const QString& getFilename() const { return m_filename; }

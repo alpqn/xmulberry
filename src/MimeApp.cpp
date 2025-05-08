@@ -10,13 +10,13 @@
 
 #include <iostream>
 
-MimeApp::MimeApp(QFileInfo fileInfo)
+MimeApp::MimeApp(const QFileInfo& fileInfo)
 :m_filename{ fileInfo.fileName() }
 {
     QFile desktopFile{ fileInfo.absoluteFilePath() };
     if(!desktopFile.open(QIODevice::ReadOnly)) { std::cerr << "Cannot open " << desktopFile.fileName().toStdString() << " check its permissions.\n"; return; }
 
-    QSettings desktopSettings{ desktopFile.fileName(), QSettings::IniFormat };
+    QSettings desktopSettings{ desktopFile.fileName(), QSettings::NativeFormat };
     desktopSettings.beginGroup("Desktop Entry");
     m_name = desktopSettings.value("Name").toString();
     m_icon = QIcon::fromTheme(desktopSettings.value("Icon").toString());
@@ -45,11 +45,11 @@ MimeApp::MimeApp(QFileInfo fileInfo)
 
     if(m_mimeTypes.empty()) return;
 
-    QFile configFile{ QStandardPaths::locate(QStandardPaths::ConfigLocation, "mimeapps.list") };
-    if(!configFile.open(QIODevice::ReadOnly)) { std::cerr << "Cannot open " << configFile.fileName().toStdString() << " check its permissions.\n"; return; }
+    QFile configFile{ QStandardPaths::writableLocation(QStandardPaths::ConfigLocation) + "/mimeapps.list" };
+    if(!configFile.open(QIODevice::ReadWrite)) { std::cerr << "Cannot open " << configFile.fileName().toStdString() << " check its permissions.\n"; return; }
     else
     {
-        QSettings configSettings{ configFile.fileName(), QSettings::IniFormat };
+        QSettings configSettings{ configFile.fileName(), QSettings::NativeFormat };
         configSettings.beginGroup("Default Applications");
         for(auto& key : configSettings.allKeys())
         {

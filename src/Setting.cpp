@@ -1,6 +1,6 @@
 #include "Setting.hpp"
 
-Setting::Setting(QString settingName, QVariant values, QString outputCmd)
+Setting::Setting(const QString& settingName, const QVariant& values, const QString& outputCmd)
 :m_name{ settingName }, m_values{ values }, m_outputCmd{ outputCmd + '\n' }
 {
 }
