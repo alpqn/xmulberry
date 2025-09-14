@@ -5,8 +5,8 @@ A GUI utility to set system settings for standalone window managers
 ![tab2](https://github.com/user-attachments/assets/3f69b6f3-9b2a-45ce-b9f2-0d986ccaa1b4)
 
 ## Usage
-After the save, the settings are written to a text file in `$XDG_CONFIG_HOME/xmulberry/xmulberry`. The file can later be `source`d in `bashrc`, `xinitrc`, `zshrc` or wherever.
-Xresources settings and MIME types won't be saved in the file; instead, they will be written to `Xresources` and `mimeapps.list` respectively. 
+After the save, the settings are written to a text file in `$XDG_CONFIG_HOME/xmulberry/xmulberry`. The file can later be `source`d in `bashrc`, `xinitrc`, `zshrc` or equivalent rc file.
+MIME types won't be saved in the file; instead, they will be written to `mimeapps.list`. 
 
 ## Dependencies
 - Qt and qmake

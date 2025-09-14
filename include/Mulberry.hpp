@@ -11,11 +11,10 @@ QT_BEGIN_NAMESPACE
 namespace Ui { class Mulberry; }
 QT_END_NAMESPACE
 
-class Mulberry : public QMainWindow
-{
+class Mulberry : public QMainWindow {
     Q_OBJECT
 public:
-    Mulberry(QWidget* parent = nullptr);
+    explicit Mulberry( QWidget* parent = nullptr );
     ~Mulberry();
 
     void loadMimeApps();
@@ -23,11 +22,9 @@ public:
     void updateUI();
     void populateFields();
     void saveChanges();
-    void writeChanges(const QList<Setting>& settingsChanged, const QList<Setting>& xresourcesChanged);
+    void writeChanges( const QList<Setting>& settingsChanged );
 private:
     Ui::Mulberry* ui;
     QList<Setting> m_settings;
-    QList<Setting> m_xresources;
     QList<MimeApp> m_mimeApps;
 };
-

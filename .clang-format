@@ -31,12 +31,12 @@ BraceWrapping:
   SplitEmptyNamespace: false
 BreakBeforeBinaryOperators: All
 BreakBeforeConceptDeclarations: false
-ColumnLimit: 100
+ColumnLimit: 120
 IncludeBlocks: Merge
 IndentExternBlock: Indent
 IndentRequiresClause: false
 IndentWidth: 4
-ContinuationIndentWidth: 8
+ContinuationIndentWidth: 4
 KeepEmptyLines:
   AtStartOfBlock: false
 NamespaceIndentation: All
