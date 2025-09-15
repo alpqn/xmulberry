@@ -35,7 +35,8 @@ sudo emerge dev-qt/qt6-qtbase x11-apps/xrandr x11-apps/xset x11-apps/xinput app-
 ```bash
 sudo dnf install qt6-qtbase-devel xorg-x11-server-utils xorg-x11-utils feh  
 ```
-## Compilation
+## Build
+After cloning the repository:
 ```bash
 mkdir build && cd build
 cmake ..
