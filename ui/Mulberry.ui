@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1220</width>
-    <height>785</height>
+    <width>1363</width>
+    <height>766</height>
    </rect>
   </property>
   <property name="font">
@@ -79,8 +79,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>1220</width>
-             <height>718</height>
+             <width>1363</width>
+             <height>699</height>
             </rect>
            </property>
            <property name="font">
@@ -778,7 +778,7 @@ Rate: How fast the key repeats after the delay.</string>
                     <widget class="QComboBox" name="mouseSensitivityComboBox">
                      <property name="minimumSize">
                       <size>
-                       <width>200</width>
+                       <width>500</width>
                        <height>0</height>
                       </size>
                      </property>
@@ -859,7 +859,7 @@ Rate: How fast the key repeats after the delay.</string>
                     <widget class="QComboBox" name="rScrollingComboBox">
                      <property name="minimumSize">
                       <size>
-                       <width>200</width>
+                       <width>500</width>
                        <height>0</height>
                       </size>
                      </property>
@@ -905,13 +905,6 @@ Rate: How fast the key repeats after the delay.</string>
                  </spacer>
                 </item>
                 <item>
-                 <widget class="QCheckBox" name="lefthanded">
-                  <property name="text">
-                   <string/>
-                  </property>
-                 </widget>
-                </item>
-                <item>
                  <widget class="QWidget" name="lefthandedValues" native="true">
                   <layout class="QHBoxLayout" name="horizontalLayout_7">
                    <property name="leftMargin">
@@ -927,6 +920,13 @@ Rate: How fast the key repeats after the delay.</string>
                     <number>0</number>
                    </property>
                    <item>
+                    <widget class="QCheckBox" name="lefthanded">
+                     <property name="text">
+                      <string/>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
                     <widget class="QLabel" name="deviceLabel_2">
                      <property name="toolTip">
                       <string>Select the device that you want to modify.</string>
@@ -940,7 +940,7 @@ Rate: How fast the key repeats after the delay.</string>
                     <widget class="QComboBox" name="lefthandedComboBox">
                      <property name="minimumSize">
                       <size>
-                       <width>200</width>
+                       <width>500</width>
                        <height>0</height>
                       </size>
                      </property>
@@ -1008,8 +1008,8 @@ Rate: How fast the key repeats after the delay.</string>
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>1220</width>
-             <height>718</height>
+             <width>1363</width>
+             <height>699</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_4" stretch="0,0,0,0">
