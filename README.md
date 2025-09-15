@@ -9,7 +9,7 @@ After the save, the settings are written to a text file in `$XDG_CONFIG_HOME/xmu
 MIME types won't be saved in the file; instead, they will be written to `mimeapps.list`. 
 
 ## Dependencies
-- Qt and qmake
+- Qt
 - feh
 - xrandr
 - xset
