@@ -19,7 +19,7 @@ Mulberry::Mulberry( QWidget* parent ): QMainWindow { parent }, ui { new Ui::Mulb
 {
     ui->setupUi( this );
 
-    auto save = new QPushButton( "Save" );
+    const auto save = new QPushButton( "Save" );
     ui->statusbar->addPermanentWidget( save );
 
     connect( save, &QPushButton::clicked, this, &Mulberry::saveChanges );
@@ -28,9 +28,9 @@ Mulberry::Mulberry( QWidget* parent ): QMainWindow { parent }, ui { new Ui::Mulb
             QFileDialog::getOpenFileName( this, "Choosing the wallpaper", "/home", "Images (*.png *.xpm *.jpg)" ) );
     } );
     connect( ui->dpmsState, &QCheckBox::toggled, this,
-        [&] { ui->DPMSValues->setEnabled( ui->dpmsState->isChecked() ); } );
+             [&] { ui->DPMSValues->setEnabled( ui->dpmsState->isChecked() ); } );
     connect( ui->autoRepeatState, &QCheckBox::toggled, this,
-        [&] { ui->autoRepeatValues->setEnabled( ui->autoRepeatState->isChecked() ); } );
+             [&] { ui->autoRepeatValues->setEnabled( ui->autoRepeatState->isChecked() ); } );
     connect( ui->appComboBox, &QComboBox::currentTextChanged, this, [&] {
         ui->mimeTypeComboBox->clear();
         ui->mimeTypeComboBox->addItems( m_mimeApps[ui->appComboBox->currentIndex()].getMimeTypes() );
@@ -69,7 +69,9 @@ void Mulberry::populateFields()
 
     ui->resolution->insertItems( 0, SH( "xrandr | awk '{print $1}' | sed -n '/^[0-9]/p' | head -c -1" ).split( '\n' ) );
     ui->resolution->setStyleSheet( "QComboBox { combobox-popup: 0; }" );
-    ui->resolution->setFont( this->font() );
+    auto font = this->font();
+    font.setPointSize( 19 );
+    ui->resolution->setFont( font );
 
     loadSettings();
     loadMimeApps();
@@ -79,40 +81,40 @@ void Mulberry::loadSettings()
 {
     Setting browser { "Browser", qgetenv( "BROWSER" ), "export BROWSER=%1" };
     browser.setGetter( [this] { return ui->browser->text(); } );
-    browser.setSetter( [=, this] { ui->browser->setText( browser.values().toString() ); } );
+    browser.setSetter( [browser, this] { ui->browser->setText( browser.values().toString() ); } );
     browser.setChangedCallback( [=] { return browser.values().toString() != browser.getter().toString(); } );
     m_settings.push_back( std::move( browser ) );
 
     Setting editor { "Editor", qgetenv( "EDITOR" ), "export EDITOR=%1" };
     editor.setGetter( [this] { return ui->editor->text(); } );
-    editor.setSetter( [=, this] { ui->editor->setText( editor.values().toString() ); } );
+    editor.setSetter( [editor, this] { ui->editor->setText( editor.values().toString() ); } );
     editor.setChangedCallback( [=] { return editor.values().toString() != editor.getter().toString(); } );
     m_settings.push_back( std::move( editor ) );
 
     Setting visual { "Visual", qgetenv( "VISUAL" ), "export VISUAL=%1" };
     visual.setGetter( [this] { return ui->visual->text(); } );
-    visual.setSetter( [=, this] { ui->visual->setText( visual.values().toString() ); } );
+    visual.setSetter( [visual, this] { ui->visual->setText( visual.values().toString() ); } );
     visual.setChangedCallback( [=] { return visual.values().toString() != visual.getter().toString(); } );
     m_settings.push_back( std::move( visual ) );
 
     Setting pager { "Pager", qgetenv( "PAGER" ), "export PAGER=%1" };
     pager.setGetter( [this] { return ui->pager->text(); } );
-    pager.setSetter( [=, this] { ui->pager->setText( pager.values().toString() ); } );
+    pager.setSetter( [pager, this] { ui->pager->setText( pager.values().toString() ); } );
     pager.setChangedCallback( [=] { return pager.values().toString() != pager.getter().toString(); } );
     m_settings.push_back( std::move( pager ) );
 
     Setting terminal { "Terminal", qgetenv( "TERMINAL" ), "export TERMINAL=%1" };
     terminal.setGetter( [this] { return ui->terminal->text(); } );
-    terminal.setSetter( [=, this] { ui->terminal->setText( terminal.values().toString() ); } );
+    terminal.setSetter( [terminal, this] { ui->terminal->setText( terminal.values().toString() ); } );
     terminal.setChangedCallback( [=] { return terminal.values().toString() != terminal.getter().toString(); } );
     m_settings.push_back( std::move( terminal ) );
 
-    QStringList xrandrOutput { SH( "xrandr" ).split( '\n' ) };
+    const QStringList xrandrOutput { SH( "xrandr" ).split( '\n' ) };
     Setting resolution { "Resolution", xrandrOutput.filter( "*" )[0].simplified().section( " ", 0, 0 ),
                          "xrandr --output " + xrandrOutput.filter( "connected" )[0].simplified().section( " ", 0, 0 )
                              + " --mode %1" };
     resolution.setGetter( [this] { return ui->resolution->currentText(); } );
-    resolution.setSetter( [=, this] { ui->resolution->setCurrentText( resolution.values().toString() ); } );
+    resolution.setSetter( [resolution, this] { ui->resolution->setCurrentText( resolution.values().toString() ); } );
     resolution.setChangedCallback( [=] { return resolution.values() != resolution.getter(); } );
     m_settings.push_back( std::move( resolution ) );
 
@@ -121,23 +123,24 @@ void Mulberry::loadSettings()
     wallpaper.setChangedCallback( [=] { return wallpaper.values() != wallpaper.getter(); } );
     m_settings.push_back( std::move( wallpaper ) );
 
-    QStringList xsetOutput { SH( "xset q" ).split( '\n' ) };
+    const QStringList xsetOutput { SH( "xset q" ).split( '\n' ) };
 
     Setting autoRState { "Auto Repeat State",
                          xsetOutput.filter( "auto repeat:" )[0].simplified().section( " ", 2, 2 ) == "on",
                          "xset r %1" };
     autoRState.setGetter( [this] { return ui->autoRepeatState->isChecked() ? "on" : "off"; } );
-    autoRState.setSetter( [=, this] { ui->autoRepeatState->setChecked( autoRState.values().toBool() ); } );
-    autoRState.setChangedCallback( [=, this] { return autoRState.values() != ui->autoRepeatState->isChecked(); } );
+    autoRState.setSetter( [autoRState, this] { ui->autoRepeatState->setChecked( autoRState.values().toBool() ); } );
+    autoRState.setChangedCallback(
+        [autoRState, this] { return autoRState.values() != ui->autoRepeatState->isChecked(); } );
     m_settings.push_back( std::move( autoRState ) );
 
-    QString autoRValuesLine { xsetOutput.filter( "auto repeat delay:" )[0].simplified() };
+    const QString autoRValuesLine { xsetOutput.filter( "auto repeat delay:" )[0].simplified() };
     Setting autoRValues { "Auto Repeat Values (Delay, Rate)",
                           QStringList { autoRValuesLine.section( " ", 3, 3 ), autoRValuesLine.section( " ", 6, 6 ) },
                           "xset r rate %1 %2" };
     autoRValues.setGetter(
         [this] { return QStringList { ui->autoRepeatDelay->cleanText(), ui->autoRepeatRate->cleanText() }; } );
-    autoRValues.setSetter( [=, this] {
+    autoRValues.setSetter( [autoRValues, this] {
         auto list = autoRValues.values().toStringList();
         ui->autoRepeatDelay->setValue( list[0].toInt() );
         ui->autoRepeatRate->setValue( list[1].toInt() );
@@ -145,23 +148,22 @@ void Mulberry::loadSettings()
     autoRValues.setChangedCallback( [=] { return autoRValues.values() != autoRValues.getter(); } );
     m_settings.push_back( std::move( autoRValues ) );
 
-    Setting dpmsState { "DPMS State",
-                        xsetOutput.filter( "DPMS is" )[0].simplified().section( " ", 2, 2 ) == "Enabled" ? true : false,
+    Setting dpmsState { "DPMS State", xsetOutput.filter( "DPMS is" )[0].simplified().section( " ", 2, 2 ) == "Enabled",
                         "xset %1dpms" };
     dpmsState.setGetter( [this] { return ui->dpmsState->isChecked() ? "+" : "-"; } );
-    dpmsState.setSetter( [=, this] { ui->dpmsState->setChecked( dpmsState.values().toBool() ); } );
-    dpmsState.setChangedCallback( [=, this] { return dpmsState.values() != ui->dpmsState->isChecked(); } );
+    dpmsState.setSetter( [dpmsState, this] { ui->dpmsState->setChecked( dpmsState.values().toBool() ); } );
+    dpmsState.setChangedCallback( [dpmsState, this] { return dpmsState.values() != ui->dpmsState->isChecked(); } );
     m_settings.push_back( std::move( dpmsState ) );
 
-    QString dpmsLine { xsetOutput.filter( "Standby" )[0].simplified() };
+    const QString dpmsLine { xsetOutput.filter( "Standby" )[0].simplified() };
     Setting dpmsValues {
         "DPMS Values (Standby, Suspend, Off)",
         QStringList { dpmsLine.section( " ", 1, 1 ), dpmsLine.section( " ", 3, 3 ), dpmsLine.section( " ", 5, 5 ) },
         "xset dpms %1 %2 %3" };
-    dpmsValues.setGetter( [=, this] {
+    dpmsValues.setGetter( [this] {
         return QStringList { ui->dpmsStandby->cleanText(), ui->dpmsSuspend->cleanText(), ui->dpmsOff->cleanText() };
     } );
-    dpmsValues.setSetter( [=, this] {
+    dpmsValues.setSetter( [dpmsValues, this] {
         auto list = dpmsValues.values().toStringList();
         ui->dpmsStandby->setValue( list[0].toInt() );
         ui->dpmsSuspend->setValue( list[1].toInt() );
@@ -173,20 +175,20 @@ void Mulberry::loadSettings()
     Setting screensaver { "Screensaver", xsetOutput.filter( "timeout:" )[0].simplified().section( " ", 1, 1 ),
                           "xset s %1" };
     screensaver.setGetter( [this] { return ui->screensaverTimeout->cleanText(); } );
-    screensaver.setSetter( [=, this] { ui->screensaverTimeout->setValue( screensaver.values().toInt() ); } );
+    screensaver.setSetter( [screensaver, this] { ui->screensaverTimeout->setValue( screensaver.values().toInt() ); } );
     screensaver.setChangedCallback( [=] { return screensaver.values() != screensaver.getter(); } );
     m_settings.push_back( std::move( screensaver ) );
 
     QHash<QString, QVariant> lefthandedValues;
     QHash<QString, QVariant> rScrollingValues;
     QHash<QString, QVariant> sensitivityValues;
-    QStringList xinputOutput { SH( "xinput" ).split( '\n' ) };
 
-    for (const auto& device: xinputOutput.filter( QRegularExpression( "^⎜.*↳.*" ) )) {
-        QString xinputFormatted { device.mid( device.indexOf( "↳" ) + 1, device.indexOf( "id=" ) ).simplified() };
-        QString name { xinputFormatted.split( "id=" ).first().trimmed() };
-        QString id { xinputFormatted.split( "id=" ).last().split( '=' ).last().trimmed() };
-        QStringList listPropsOutput { SH( "xinput list-props pointer:'" + name + "'" ).split( '\n' ) };
+    for (const QStringList xinputOutput { SH( "xinput" ).split( '\n' ) };
+         const auto& device: xinputOutput.filter( QRegularExpression( "^⎜.*↳.*" ) )) {
+        const QString xinputFormatted { device.mid( device.indexOf( "↳" ) + 1, device.indexOf( "id=" ) ).simplified() };
+        const QString name { xinputFormatted.split( "id=" ).first().trimmed() };
+        const QString id { xinputFormatted.split( "id=" ).last().split( '=' ).last().trimmed() };
+        const QStringList listPropsOutput { SH( "xinput list-props pointer:'" + name + "'" ).split( '\n' ) };
 
         if (QStringList line { listPropsOutput.filter( "libinput Accel Speed (" ) }; !line.isEmpty()) {
             ui->mouseSensitivityComboBox->addItem( name );
@@ -209,14 +211,14 @@ void Mulberry::loadSettings()
     lefthanded.setGetter( [this] {
         return QStringList { ui->lefthandedComboBox->currentText(), ui->lefthanded->isChecked() ? "1" : "0" };
     } );
-    lefthanded.setSetter( [=, this] {
+    lefthanded.setSetter( [lefthanded, this] {
         ui->lefthanded->setChecked( lefthanded.values().toHash()[ui->lefthandedComboBox->currentText()].toBool() );
     } );
-    lefthanded.setChangedCallback( [=, this] {
+    lefthanded.setChangedCallback( [lefthanded, this] {
         return lefthanded.values().toHash()[ui->lefthandedComboBox->currentText()].toBool()
                != ui->lefthanded->isChecked();
     } );
-    connect( ui->lefthandedComboBox, &QComboBox::currentTextChanged, this, [=, this] {
+    connect( ui->lefthandedComboBox, &QComboBox::currentTextChanged, this, [lefthanded, this] {
         ui->lefthanded->setChecked( lefthanded.values().toHash()[ui->lefthandedComboBox->currentText()].toBool() );
     } );
     m_settings.push_back( std::move( lefthanded ) );
@@ -226,14 +228,14 @@ void Mulberry::loadSettings()
     rScrolling.setGetter( [this] {
         return QStringList { ui->rScrollingComboBox->currentText(), ui->rScrolling->isChecked() ? "1" : "0" };
     } );
-    rScrolling.setSetter( [=, this] {
+    rScrolling.setSetter( [rScrolling, this] {
         ui->rScrolling->setChecked( rScrolling.values().toHash()[ui->rScrollingComboBox->currentText()].toBool() );
     } );
-    rScrolling.setChangedCallback( [=, this] {
+    rScrolling.setChangedCallback( [rScrolling, this] {
         return rScrolling.values().toHash()[ui->rScrollingComboBox->currentText()].toBool()
                != ui->rScrolling->isChecked();
     } );
-    connect( ui->rScrollingComboBox, &QComboBox::currentTextChanged, this, [=, this] {
+    connect( ui->rScrollingComboBox, &QComboBox::currentTextChanged, this, [rScrolling, this] {
         ui->rScrolling->setChecked( rScrolling.values().toHash()[ui->rScrollingComboBox->currentText()].toBool() );
     } );
     m_settings.push_back( std::move( rScrolling ) );
@@ -242,15 +244,15 @@ void Mulberry::loadSettings()
                           "xinput set-prop pointer:'%1' 'libinput Accel Speed' %2" };
     sensitivity.setGetter(
         [this] { return QStringList { ui->mouseSensitivityComboBox->currentText(), ui->mouseSensitivity->text() }; } );
-    sensitivity.setSetter( [=, this] {
+    sensitivity.setSetter( [sensitivity, this] {
         ui->mouseSensitivity->setValue(
             sensitivity.values().toHash()[ui->mouseSensitivityComboBox->currentText()].toDouble() );
     } );
-    sensitivity.setChangedCallback( [=, this] {
+    sensitivity.setChangedCallback( [sensitivity, this] {
         return sensitivity.values().toHash()[ui->mouseSensitivityComboBox->currentText()].toDouble()
                != ui->mouseSensitivity->text().toDouble();
     } );
-    connect( ui->mouseSensitivityComboBox, &QComboBox::currentTextChanged, this, [=, this] {
+    connect( ui->mouseSensitivityComboBox, &QComboBox::currentTextChanged, this, [sensitivity, this] {
         ui->mouseSensitivity->setValue(
             sensitivity.values().toHash()[ui->mouseSensitivityComboBox->currentText()].toDouble() );
     } );
@@ -259,17 +261,17 @@ void Mulberry::loadSettings()
 
 void Mulberry::saveChanges()
 {
-    auto msg = new QDialog();
-    auto resVBox = new QVBoxLayout();
+    const auto msg = new QDialog();
+    const auto resVBox = new QVBoxLayout();
     msg->setLayout( resVBox );
     QList<Setting> settingsChanged;
 
     for (const auto& setting: m_settings) {
         if (setting.isChanged()) {
             settingsChanged.push_back( setting );
-            auto HBox = new QHBoxLayout();
-            auto changes = new QLabel();
-            auto settingName = new QLabel( setting.name() );
+            const auto HBox = new QHBoxLayout();
+            const auto changes = new QLabel();
+            const auto settingName = new QLabel( setting.name() );
             if (setting.values().canConvert<QStringList>()) {
                 auto settingValues = setting.values().toStringList().join( " " );
                 changes->setText( "  " + ( settingValues.isEmpty() ? "" : settingValues + "  ----->  " ) );
@@ -288,9 +290,9 @@ void Mulberry::saveChanges()
             changes->setMinimumWidth( 300 );
             changes->setAlignment( Qt::AlignRight );
             changes->setFont( this->font() );
-            changes->setWordWrap( 1 );
+            changes->setWordWrap( true );
             settingName->setFont( this->font() );
-            settingName->setWordWrap( 1 );
+            settingName->setWordWrap( true );
             HBox->addWidget( settingName );
             HBox->addWidget( changes );
             HBox->insertStretch( 1 );
@@ -303,19 +305,19 @@ void Mulberry::saveChanges()
             QStringList changedMimeTypes { type.getMimeTypesAdded() };
             changedMimeTypes.removeDuplicates();
 
-            auto HBox = new QHBoxLayout();
-            auto appName = new QLabel( type.getName().toUtf8() + ": " );
-            auto changes = new QLabel( changedMimeTypes.join( "" ).trimmed() );
+            const auto HBox = new QHBoxLayout();
+            const auto appName = new QLabel( type.getName().toUtf8() + ": " );
+            const auto changes = new QLabel( changedMimeTypes.join( "" ).trimmed() );
 
-            auto icon = new QLabel();
+            const auto icon = new QLabel();
             icon->setPixmap( type.getIcon().pixmap( 20, 20 ) );
 
             changes->setMinimumWidth( 300 );
             changes->setAlignment( Qt::AlignRight );
             changes->setFont( this->font() );
-            changes->setWordWrap( 1 );
+            changes->setWordWrap( true );
             appName->setFont( this->font() );
-            appName->setWordWrap( 1 );
+            appName->setWordWrap( true );
             HBox->addWidget( icon );
             HBox->addWidget( appName );
             HBox->addWidget( changes );
@@ -329,16 +331,16 @@ void Mulberry::saveChanges()
     } else {
         msg->setWindowTitle( "Save Changes" );
 
-        auto sourceChangesHBox = new QHBoxLayout();
-        auto sourceChanges = new QLabel( "Source the config file in xinitrc" );
-        auto sourceChangesCheckBox = new QCheckBox();
+        const auto sourceChangesHBox = new QHBoxLayout();
+        const auto sourceChanges = new QLabel( "Source the config file in xinitrc" );
+        const auto sourceChangesCheckBox = new QCheckBox();
         sourceChangesCheckBox->setObjectName( "sourceChangesCheckBox" );
         sourceChangesHBox->addWidget( sourceChanges );
         sourceChangesHBox->addWidget( sourceChangesCheckBox );
         sourceChangesHBox->insertStretch( 2 );
         if (!settingsChanged.empty()) { resVBox->addLayout( sourceChangesHBox ); }
 
-        auto buttons = new QDialogButtonBox( QDialogButtonBox::Ok | QDialogButtonBox::Cancel, msg );
+        const auto buttons = new QDialogButtonBox( QDialogButtonBox::Ok | QDialogButtonBox::Cancel, msg );
         resVBox->addWidget( buttons );
 
         connect( buttons, &QDialogButtonBox::accepted, msg, &QDialog::accept );
@@ -352,7 +354,7 @@ void Mulberry::saveChanges()
                     return;
                 }
                 QTextStream xinitrcIn { &xinitrc };
-                QString xinitrcContent { xinitrcIn.readAll() };
+                const QString xinitrcContent { xinitrcIn.readAll() };
                 xinitrc.close();
                 if (!xinitrcContent.contains(
                         ". " + QStandardPaths::locate( QStandardPaths::ConfigLocation, "xmulberry/xmulberry" ) )) {
@@ -376,11 +378,11 @@ void Mulberry::saveChanges()
 void Mulberry::loadMimeApps()
 {
     for (const auto& appDirsPath: QStandardPaths::standardLocations( QStandardPaths::ApplicationsLocation )) {
-        QDir dir { appDirsPath };
-        for (const auto& appFile: dir.entryInfoList( QStringList( "*.desktop" ) )) {
-            QFile file { appFile.absoluteFilePath() };
-            MimeApp app { QFileInfo( file ) };
-            if (!( app.getMimeTypes().empty() || app.getName().isEmpty() )) { m_mimeApps.push_back( app ); }
+        for (const QDir dir { appDirsPath }; const auto& appFile: dir.entryInfoList( QStringList( "*.desktop" ) )) {
+            const QFile file { appFile.absoluteFilePath() };
+            if (const MimeApp app { QFileInfo( file ) }; !( app.getMimeTypes().empty() || app.getName().isEmpty() )) {
+                m_mimeApps.push_back( app );
+            }
         }
     }
     std::ranges::sort( m_mimeApps, [=]( const MimeApp& a, const MimeApp& b ) { return a.getName() < b.getName(); } );
@@ -389,9 +391,9 @@ void Mulberry::loadMimeApps()
 
 void Mulberry::writeChanges( const QList<Setting>& settingsChanged )
 {
-    QFileInfo filepath { QStandardPaths::writableLocation( QStandardPaths::ConfigLocation ) + "/xmulberry/xmulberry" };
-    QDir dir { filepath.dir() };
-    if (!dir.exists()) { dir.mkpath( "." ); }
+    const QFileInfo filepath { QStandardPaths::writableLocation( QStandardPaths::ConfigLocation )
+                               + "/xmulberry/xmulberry" };
+    if (const QDir dir { filepath.dir() }; !dir.exists()) { dir.mkpath( "." ); }
     QFile file { filepath.absoluteFilePath() };
     // Open it in ReadWrite mode so that if the file doesn't exist, it will be created
     if (!file.open( QIODevice::ReadWrite )) {
@@ -448,7 +450,7 @@ void Mulberry::writeChanges( const QList<Setting>& settingsChanged )
         exit( 1 );
     }
     QTextStream configFileIn { &configFile };
-    QByteArray encodedConfigFile {
+    const QByteArray encodedConfigFile {
         configFileIn.readAll().replace( "\\", "/" ).toUtf8() }; // Replace the backslashes with slashes because
                                                                 // QSettings::NativeFormat does that for some reason
     configFile.close();
